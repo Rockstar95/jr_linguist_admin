@@ -1,4 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:typed_data';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:jr_linguist_admin/configs/constants.dart';
 import 'package:jr_linguist_admin/configs/typedefs.dart';
 import 'package:jr_linguist_admin/controllers/navigation_controller.dart';
@@ -19,7 +21,7 @@ class QuestionController {
     questionProvider.isLoadingQuestions = true;
     if(isNotify) questionProvider.notifyListeners();
 
-    MyFirestoreQuerySnapshot querySnapshot = await FirebaseNodes.questionsCollectionReference.get();
+    MyFirestoreQuerySnapshot querySnapshot = await FirebaseNodes.questionsCollectionReference.orderBy("createdTime", descending: true).get();
 
     questions.addAll(querySnapshot.docs.map((e) {
       return QuestionModel.fromMap(e.data());
@@ -53,6 +55,43 @@ class QuestionController {
 
     return isDeleted;
   }
+
+  Future<String> uploadQuestionImage(Uint8List data) async {
+    String imageUrl = "";
+
+    String fileName = "${DateTime.now().millisecondsSinceEpoch}.png";
+
+    final Reference storageRef = FirebaseStorage.instance.ref().child("questions").child(fileName);
+
+    try {
+      await storageRef.putData(data);
+    }
+    catch(e, s) {
+      MyPrint.printOnConsole("Error in Uploading Question Image in QuestionController().uploadQuestionImage():$e");
+      MyPrint.printOnConsole(s);
+    }
+
+    imageUrl = await storageRef.getDownloadURL();
+
+    return imageUrl;
+  }
+
+  Future<bool> addQuestion({required QuestionModel questionModel}) async {
+    MyPrint.printOnConsole("questionModel:$questionModel");
+
+    bool isAdded = await FirebaseNodes.questionsDocumentReference(questionId: questionModel.id).set(questionModel.toMap()).then((value) {
+      return true;
+    })
+    .catchError((e, s) {
+      MyPrint.printOnConsole("Error in Adding Question in QuestionController().addQuestion():$e");
+      MyPrint.printOnConsole(s);
+    });
+
+    MyPrint.printOnConsole("isAdded:$isAdded");
+
+    return isAdded;
+  }
+
 
   Future<void> addDummyQuestion() async {
     /*QuestionModel questionModel = QuestionModel(
