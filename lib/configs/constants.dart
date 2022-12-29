@@ -4,6 +4,11 @@ import 'typedefs.dart';
 class QuestionType {
   static const String audio = "Audio";
   static const String image = "Image";
+
+  static const List<String> types = <String>[
+    audio,
+    image,
+  ];
 }
 
 class LanguagesType {
