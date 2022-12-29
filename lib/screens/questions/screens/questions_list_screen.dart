@@ -89,8 +89,9 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
 
   Widget getAddQuestionButton() {
     return FloatingActionButton(
-      onPressed: () {
-        Navigator.pushNamed(context, AddQuestionScreen.routeName);
+      onPressed: () async {
+        await Navigator.pushNamed(context, AddQuestionScreen.routeName);
+        QuestionController().getAllQuestions(isNotify: true);
       },
       child: const Icon(Icons.add),
     );
