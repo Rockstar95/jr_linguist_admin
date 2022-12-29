@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../../configs/constants.dart';
 import '../../../models/question_model.dart';
 import '../../../utils/my_print.dart';
-import '../../../utils/snakbar.dart';
+import '../../../utils/styles.dart';
 
 class QuestionWidget2 extends StatelessWidget {
   final QuestionModel questionModel;
@@ -53,7 +54,10 @@ class QuestionWidget2 extends StatelessWidget {
 
   Widget getQuestionResourceWidget({required QuestionModel questionModel, required ThemeData themeData}) {
     if(questionModel.questionType == QuestionType.image) {
-      return CachedNetworkImage(imageUrl: questionModel.questionResourceUrl);
+      return CachedNetworkImage(
+        imageUrl: questionModel.questionResourceUrl,
+        placeholder: (_, __) => const SpinKitFadingCircle(color: Styles.primaryColor,),
+      );
     }
     else {
       return Column(
@@ -65,7 +69,7 @@ class QuestionWidget2 extends StatelessWidget {
 
               ),
             ),
-            const SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ElevatedButton(
             onPressed: () async {
               if(questionModel.questionResourceUrl.isNotEmpty) {
