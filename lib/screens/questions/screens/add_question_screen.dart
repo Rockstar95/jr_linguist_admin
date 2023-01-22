@@ -8,8 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:jr_linguist_admin/configs/constants.dart';
 import 'package:jr_linguist_admin/controllers/question_controller.dart';
 import 'package:jr_linguist_admin/models/question_model.dart';
+import 'package:jr_linguist_admin/providers/question_provider.dart';
 import 'package:jr_linguist_admin/utils/my_print.dart';
 import 'package:jr_linguist_admin/utils/snakbar.dart';
+import 'package:provider/provider.dart';
 
 import '../../../utils/myutils.dart';
 import '../../../utils/styles.dart';
@@ -29,11 +31,14 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   bool isLoading = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController questionController = TextEditingController();
+  TextEditingController questionTextEditingController = TextEditingController();
   TextEditingController questionResourceController = TextEditingController();
 
   String questionType = QuestionType.audio;
   String languageType = LanguagesType.english;
+
+  late QuestionProvider questionProvider;
+  late QuestionController questionController;
 
   Uint8List? imageFile;
   
@@ -72,7 +77,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     String imageUrl = "";
 
     if(questionType == QuestionType.image && imageData != null) {
-      imageUrl = await QuestionController().uploadQuestionImage(imageData);
+      imageUrl = await questionController.uploadQuestionImage(imageData);
     }
     MyPrint.printOnConsole("Final imageUrl:$imageUrl");
 
@@ -91,7 +96,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       createdTime: Timestamp.now(),
     );
 
-    bool isAdded = await QuestionController().addQuestion(questionModel: questionModel);
+    bool isAdded = await questionController.addQuestion(questionModel: questionModel);
 
     isLoading = false;
     setState(() {});
@@ -103,6 +108,13 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     else {
       Snakbar.showErrorSnakbar(context: context, msg: "Error in Adding Question");
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    questionProvider = Provider.of<QuestionProvider>(context, listen: false);
+    questionController = QuestionController(questionProvider: questionProvider);
   }
 
   @override
@@ -156,7 +168,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
   Widget getQuestionTextField() {
     return TextFormField(
-      controller: questionController,
+      controller: questionTextEditingController,
       decoration: textFieldDecorationWidget(
         hint: "Question",
       ),
@@ -424,7 +436,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
         if(isFormValidated && isQuestionTypeValidated && isLanguageTypeValidated && isQuestionResourceValidated && isAnswersValidated && isSelectedAnswersValidated) {
           addQuestionInFirebase(
-            question: questionController.text.trim(),
+            question: questionTextEditingController.text.trim(),
             questionType: questionType,
             languageType: languageType,
             audioWord: questionResourceController.text.trim(),
