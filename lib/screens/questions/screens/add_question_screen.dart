@@ -35,7 +35,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   TextEditingController questionResourceController = TextEditingController();
 
   String questionType = QuestionType.audio;
-  String languageType = LanguagesType.english;
+  String languageType = LanguagesType.hindi;
 
   late QuestionProvider questionProvider;
   late QuestionController questionController;
@@ -241,7 +241,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               );
             }).toList(),
             onChanged: (String? newValue) {
-              languageType = (newValue?.isEmpty ?? true) ? LanguagesType.english : newValue!;
+              languageType = (newValue?.isEmpty ?? true) ? LanguagesType.hindi : newValue!;
               setState(() {});
             },
           ),

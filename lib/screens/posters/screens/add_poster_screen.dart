@@ -29,7 +29,7 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
   late QuestionProvider questionProvider;
   late QuestionController questionController;
 
-  String languageType = LanguagesType.english;
+  String languageType = LanguagesType.hindi;
 
   Uint8List? imageFile;
 
@@ -153,7 +153,7 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
               );
             }).toList(),
             onChanged: (String? newValue) {
-              languageType = (newValue?.isEmpty ?? true) ? LanguagesType.english : newValue!;
+              languageType = (newValue?.isEmpty ?? true) ? LanguagesType.hindi : newValue!;
               setState(() {});
             },
           ),
