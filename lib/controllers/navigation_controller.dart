@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jr_linguist_admin/screens/home_screen/main_page.dart';
+import 'package:jr_linguist_admin/screens/posters/screens/add_poster_screen.dart';
 import 'package:jr_linguist_admin/utils/my_print.dart';
 
+import '../screens/posters/screens/poster_list_screen.dart';
 import '../screens/questions/screens/add_question_screen.dart';
 import '../screens/questions/screens/questions_list_screen.dart';
 
@@ -28,6 +30,14 @@ class NavigationController {
       }
       case AddQuestionScreen.routeName : {
         widget = const AddQuestionScreen();
+        break;
+      }
+      case PosterListScreen.routeName : {
+        widget = const PosterListScreen();
+        break;
+      }
+      case AddPosterScreen.routeName : {
+        widget = const AddPosterScreen();
         break;
       }
     }

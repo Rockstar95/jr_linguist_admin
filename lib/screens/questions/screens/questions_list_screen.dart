@@ -23,15 +23,18 @@ class QuestionsListScreen extends StatefulWidget {
 class _QuestionsListScreenState extends State<QuestionsListScreen> {
   bool isLoading = false;
 
+  late QuestionProvider questionProvider;
+  late QuestionController questionController;
+
   Future<void> deleteQuestion({required String questionId}) async {
     setState(() {
       isLoading = true;
     });
 
-    bool isDeleted = await QuestionController().deleteQuestion(questionId: questionId);
+    bool isDeleted = await questionController.deleteQuestion(questionId: questionId);
 
     if(isDeleted) {
-      QuestionController().getAllQuestions(isNotify: true);
+      questionController.getAllQuestions(isNotify: true);
 
       Snakbar.showSuccessSnakbar(context: context, msg: "Question Deleted Successfully");
     }
@@ -47,7 +50,10 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
   @override
   void initState() {
     super.initState();
-    QuestionController().getAllQuestions(isNotify: false);
+    questionProvider = Provider.of<QuestionProvider>(context, listen: false);
+    questionController = QuestionController(questionProvider: questionProvider);
+
+    questionController.getAllQuestions(isNotify: false);
   }
 
   @override
@@ -79,7 +85,7 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
       actions: [
         IconButton(
           onPressed: () {
-            QuestionController().getAllQuestions();
+            questionController.getAllQuestions();
           },
           icon: const Icon(Icons.refresh),
         ),
@@ -89,8 +95,9 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
 
   Widget getAddQuestionButton() {
     return FloatingActionButton(
-      onPressed: () {
-        Navigator.pushNamed(context, AddQuestionScreen.routeName);
+      onPressed: () async {
+        await Navigator.pushNamed(context, AddQuestionScreen.routeName);
+        questionController.getAllQuestions(isNotify: true);
       },
       child: const Icon(Icons.add),
     );
