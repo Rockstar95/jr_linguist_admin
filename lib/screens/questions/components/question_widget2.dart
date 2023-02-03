@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../../configs/constants.dart';
 import '../../../models/question_model.dart';
 import '../../../utils/my_print.dart';
-import '../../../utils/snakbar.dart';
+import '../../../utils/styles.dart';
 
 class QuestionWidget2 extends StatelessWidget {
   final QuestionModel questionModel;
@@ -33,7 +34,7 @@ class QuestionWidget2 extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10,),
-            getQuestionResourceWidget(questionModel: questionModel),
+            getQuestionResourceWidget(questionModel: questionModel, themeData: themeData),
             const SizedBox(height: 10,),
             getAnswersWidget(answers: questionModel.answers),
             const SizedBox(height: 10,),
@@ -51,26 +52,41 @@ class QuestionWidget2 extends StatelessWidget {
     );
   }
 
-  Widget getQuestionResourceWidget({required QuestionModel questionModel}) {
+  Widget getQuestionResourceWidget({required QuestionModel questionModel, required ThemeData themeData}) {
     if(questionModel.questionType == QuestionType.image) {
-      return CachedNetworkImage(imageUrl: questionModel.questionResourceUrl);
+      return CachedNetworkImage(
+        imageUrl: questionModel.questionResourceUrl,
+        placeholder: (_, __) => const SpinKitFadingCircle(color: Styles.primaryColor,),
+      );
     }
     else {
-      return ElevatedButton(
-        onPressed: () async {
-          if(questionModel.questionResourceUrl.isNotEmpty) {
-            FlutterTts flutterTts = FlutterTts();
-            await flutterTts.speak(questionModel.questionResourceUrl);
-          }
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.volume_up),
-            SizedBox(),
-            Text("Play Audio"),
-          ],
-        ),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+              "Word: ${questionModel.questionResourceUrl}",
+              style: themeData.textTheme.subtitle2?.copyWith(
+
+              ),
+            ),
+          const SizedBox(height: 10,),
+          ElevatedButton(
+            onPressed: () async {
+              if(questionModel.questionResourceUrl.isNotEmpty) {
+                FlutterTts flutterTts = FlutterTts();
+                await flutterTts.speak(questionModel.questionResourceUrl);
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.volume_up),
+                SizedBox(),
+                Text("Play Audio"),
+              ],
+            ),
+          ),
+        ],
       );
     }
   }

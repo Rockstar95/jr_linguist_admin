@@ -4,25 +4,45 @@ import 'typedefs.dart';
 class QuestionType {
   static const String audio = "Audio";
   static const String image = "Image";
+
+  static const List<String> types = <String>[
+    audio,
+    image,
+  ];
 }
 
 class LanguagesType {
-  static const String english = "English";
+  // static const String english = "English";
   static const String hindi = "Hindi";
+  static const String gujarati = "Gujarati";
   static const String marathi = "Marathi";
-  static const String tamil = "Tamil";
-  static const String telugu = "Telugu";
+  static const String sanskrit = "Sanskrit";
+  static const String kannad = "Kannad";
 
   static const List<String> languages = <String>[
-    english,
+    // english,
     hindi,
+    gujarati,
     marathi,
-    tamil,
-    telugu,
+    sanskrit,
+    kannad,
   ];
 }
 
 class FirebaseNodes {
+  //region Admin Collection
+  static const String adminCollection = 'admin';
+
+  //region Language-Wise Posters document
+  static const String languagewisePostersDocument = 'languagewisePosters';
+
+  static MyFirestoreDocumentReference languagewisePostersDocumentReference() => FirestoreController.documentReference(
+    collectionName: adminCollection,
+    documentId: languagewisePostersDocument,
+  );
+  //endregion
+  //endregion
+
   //region Users Collection
   static const String usersCollection = 'users';
 

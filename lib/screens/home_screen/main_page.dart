@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jr_linguist_admin/screens/posters/screens/poster_list_screen.dart';
 import 'package:jr_linguist_admin/screens/questions/screens/questions_list_screen.dart';
 import 'package:jr_linguist_admin/utils/my_print.dart';
 import 'package:jr_linguist_admin/utils/styles.dart';
@@ -40,11 +41,22 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, QuestionsListScreen.routeName);
-                    },
-                    child: const Text("Questions List Page"),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, QuestionsListScreen.routeName);
+                        },
+                        child: const Text("Questions List Page"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, PosterListScreen.routeName);
+                        },
+                        child: const Text("Poster List Page"),
+                      ),
+                    ],
                   ),
                 ],
               ),
