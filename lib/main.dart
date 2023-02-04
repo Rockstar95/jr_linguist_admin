@@ -6,6 +6,7 @@ import 'package:jr_linguist_admin/providers/connection_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
+import 'providers/poster_provider.dart';
 import 'providers/question_provider.dart';
 
 void main() async {
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<ConnectionProvider>(create: (_) => ConnectionProvider(),),
         ChangeNotifierProvider<QuestionProvider>(create: (_) => QuestionProvider(),),
+        ChangeNotifierProvider<PosterProvider>(create: (_) => PosterProvider(),),
       ],
       child: const MainApp(),
     );

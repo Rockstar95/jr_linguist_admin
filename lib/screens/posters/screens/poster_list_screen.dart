@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:jr_linguist_admin/controllers/poster_controller.dart';
+import 'package:jr_linguist_admin/models/poster_model.dart';
+import 'package:jr_linguist_admin/providers/poster_provider.dart';
 import 'package:jr_linguist_admin/screens/posters/screens/add_poster_screen.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/question_controller.dart';
-import '../../../providers/question_provider.dart';
 import '../../../utils/snakbar.dart';
 import '../../../utils/styles.dart';
 import '../../common/components/modal_progress_hud.dart';
@@ -22,18 +23,18 @@ class PosterListScreen extends StatefulWidget {
 class _PosterListScreenState extends State<PosterListScreen> {
   bool isLoading = false;
 
-  late QuestionProvider questionProvider;
-  late QuestionController questionController;
+  late PosterProvider posterProvider;
+  late PosterController posterController;
 
-  Future<void> deletePoster({required String language}) async {
+  Future<void> deletePoster({required PosterModel model}) async {
     setState(() {
       isLoading = true;
     });
 
-    bool isDeleted = await questionController.deletePoster(language: language);
+    bool isDeleted = await posterController.deletePoster(posterId: model.id);
 
     if(isDeleted) {
-      questionController.getLanguagewisePostersData(isNotify: true);
+      posterController.getAlPosters(isNotify: true);
 
       Snakbar.showSuccessSnakbar(context: context, msg: "Poster Deleted Successfully");
     }
@@ -49,16 +50,16 @@ class _PosterListScreenState extends State<PosterListScreen> {
   @override
   void initState() {
     super.initState();
-    questionProvider = Provider.of<QuestionProvider>(context, listen: false);
-    questionController = QuestionController(questionProvider: questionProvider);
+    posterProvider = Provider.of<PosterProvider>(context, listen: false);
+    posterController = PosterController(posterProvider: posterProvider);
 
-    questionController.getLanguagewisePostersData(isNotify: false);
+    posterController.getAlPosters(isNotify: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<QuestionProvider>(
-      builder: (BuildContext context, QuestionProvider questionProvider, Widget? child) {
+    return Consumer<PosterProvider>(
+      builder: (BuildContext context, PosterProvider posterProvider, Widget? child) {
         return ModalProgressHUD(
           inAsyncCall: isLoading,
           progressIndicator: const SpinKitFadingCircle(color: Styles.primaryColor),
@@ -69,7 +70,7 @@ class _PosterListScreenState extends State<PosterListScreen> {
               backgroundColor: Colors.transparent,
               floatingActionButton: getAddPosterButton(),
               body: SafeArea(
-                child: getPostersList(questionProvider: questionProvider),
+                child: getPostersList(posterProvider: posterProvider),
               ),
             ),
           ),
@@ -84,7 +85,7 @@ class _PosterListScreenState extends State<PosterListScreen> {
       actions: [
         IconButton(
           onPressed: () {
-            questionController.getLanguagewisePostersData(isNotify: true);
+            posterController.getAlPosters(isNotify: true);
           },
           icon: const Icon(Icons.refresh),
         ),
@@ -96,22 +97,20 @@ class _PosterListScreenState extends State<PosterListScreen> {
     return FloatingActionButton(
       onPressed: () async {
         await Navigator.pushNamed(context, AddPosterScreen.routeName);
-        questionController.getLanguagewisePostersData(isNotify: true);
+        posterController.getAlPosters(isNotify: true);
       },
       child: const Icon(Icons.add),
     );
   }
 
-  Widget getPostersList({required QuestionProvider questionProvider}) {
-    if(questionProvider.isLoadingPosters) {
+  Widget getPostersList({required PosterProvider posterProvider}) {
+    if(posterProvider.isLoadingPosters) {
       return const Center(
         child: SpinKitFadingCircle(color: Styles.primaryColor),
       );
     }
 
-    Map<String, String> posters = questionProvider.posters;
-
-    List<String> languagesList = posters.keys.toList();
+    List<PosterModel> posters = posterProvider.posters;
 
     if(posters.isEmpty) {
       return const Center(
@@ -120,16 +119,15 @@ class _PosterListScreenState extends State<PosterListScreen> {
     }
 
     return ListView.builder(
-      itemCount: languagesList.length,
+      itemCount: posters.length,
       itemBuilder: (BuildContext context, int index) {
-        String language = languagesList[index];
-        String url = posters[language]!;
+        PosterModel model = posters[index];
 
         return PosterWidget(
-          language: language,
-          url: url,
+          language: model.languageType,
+          url: model.posterUrl,
           onDeleteClick: ({required String language}) async {
-            deletePoster(language: language);
+            deletePoster(model: model);
           },
         );
       },

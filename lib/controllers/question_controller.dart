@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:jr_linguist_admin/configs/constants.dart';
 import 'package:jr_linguist_admin/configs/typedefs.dart';
@@ -8,8 +7,6 @@ import 'package:jr_linguist_admin/models/question_model.dart';
 import 'package:jr_linguist_admin/providers/question_provider.dart';
 import 'package:jr_linguist_admin/utils/my_print.dart';
 import 'package:jr_linguist_admin/utils/myutils.dart';
-
-import '../utils/parsing_helper.dart';
 
 class QuestionController {
   late QuestionProvider _questionProvider;
@@ -101,110 +98,6 @@ class QuestionController {
     return isAdded;
   }
 
-  //region Posters
-  Future<Map<String, String>> getLanguagewisePostersData({bool isNotify = true}) async {
-    MyPrint.printOnConsole("QuestionController().getLanguagewisePostersData() called");
-
-    QuestionProvider provider = questionProvider;
-
-    Map<String, String> data = <String, String>{};
-
-    provider.isLoadingPosters = true;
-    if(isNotify) provider.notifyListeners();
-
-    try {
-      MyFirestoreDocumentSnapshot snapshot = await FirebaseNodes.languagewisePostersDocumentReference().get();
-      MyPrint.printOnConsole("snapshot data:${snapshot.data()}");
-
-      if(snapshot.exists && (snapshot.data() ?? {}).isNotEmpty) {
-        snapshot.data()!.forEach((String language, dynamic urlDynamic) {
-          String url = ParsingHelper.parseStringMethod(urlDynamic);
-          if(url.isNotEmpty) {
-            data[language] = url;
-          }
-        });
-      }
-      MyPrint.printOnConsole("Final Posters Data:$data");
-    }
-    catch(e, s) {
-      MyPrint.printOnConsole("Error in QuestionController().getLanguagewisePostersData():$e");
-      MyPrint.printOnConsole(s);
-    }
-
-    provider.posters = data;
-
-    provider.isLoadingPosters = false;
-    provider.notifyListeners();
-
-    return data;
-  }
-
-  Future<bool> updateLanguagewisePostersData({required Map<String, String> data}) async {
-    MyPrint.printOnConsole("QuestionController().updateLanguagewisePostersData() called with data:$data");
-
-    bool isUpdated = false;
-
-    try {
-      isUpdated = await FirebaseNodes.languagewisePostersDocumentReference().update(data).then((value) {
-        return true;
-      })
-      .catchError((e, s) {
-        MyPrint.printOnConsole("Error in QuestionController().updateLanguagewisePostersData():$e");
-        MyPrint.printOnConsole(s);
-        return false;
-      });
-      MyPrint.printOnConsole("isUpdated:$isUpdated");
-    }
-    catch(e, s) {
-      MyPrint.printOnConsole("Error in QuestionController().updateLanguagewisePostersData():$e");
-      MyPrint.printOnConsole(s);
-    }
-
-    return isUpdated;
-  }
-
-  Future<bool> deletePoster({required String language}) async {
-    MyPrint.printOnConsole("QuestionController().deletePoster() called with language:$language");
-
-    bool isDeleted = false;
-
-    if(language.isEmpty) return isDeleted;
-
-    isDeleted = await FirebaseNodes.languagewisePostersDocumentReference().update({language : FieldValue.delete()}).then((value) {
-      return true;
-    })
-    .catchError((e, s) {
-      MyPrint.printOnConsole("Error in Deleting Question in QuestionController().deleteQuestion():$e");
-      MyPrint.printOnConsole(s);
-      return false;
-    });
-
-    MyPrint.printOnConsole("isDeleted:$isDeleted");
-
-    return isDeleted;
-  }
-
-  Future<String> uploadPosterImage(Uint8List data) async {
-    String imageUrl = "";
-
-    String fileName = "${DateTime.now().millisecondsSinceEpoch}.png";
-
-    final Reference storageRef = FirebaseStorage.instance.ref().child("posters").child(fileName);
-
-    try {
-      await storageRef.putData(data);
-    }
-    catch(e, s) {
-      MyPrint.printOnConsole("Error in Uploading Question Image in QuestionController().uploadQuestionImage():$e");
-      MyPrint.printOnConsole(s);
-    }
-
-    imageUrl = await storageRef.getDownloadURL();
-
-    return imageUrl;
-  }
-  //endregion
-
 
   Future<void> addDummyQuestion() async {
     /*QuestionModel questionModel = QuestionModel(
@@ -236,7 +129,7 @@ class QuestionController {
     );
     MyPrint.printOnConsole("questionModel:$questionModel");
 
-    await FirebaseNodes.questionsDocumentReference(questionId: questionModel.id).set(questionModel.toMap());
+    await FirebaseNodes.postersDocumentReference(posterId: questionModel.id).set(questionModel.toMap());
     MyPrint.printOnConsole("Dummy Question Created");
   }
 }

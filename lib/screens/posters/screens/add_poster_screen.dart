@@ -1,15 +1,18 @@
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jr_linguist_admin/configs/constants.dart';
-import 'package:jr_linguist_admin/controllers/question_controller.dart';
-import 'package:jr_linguist_admin/providers/question_provider.dart';
+import 'package:jr_linguist_admin/controllers/poster_controller.dart';
+import 'package:jr_linguist_admin/models/poster_model.dart';
+import 'package:jr_linguist_admin/providers/poster_provider.dart';
 import 'package:jr_linguist_admin/utils/my_print.dart';
 import 'package:jr_linguist_admin/utils/snakbar.dart';
 import 'package:provider/provider.dart';
 
+import '../../../utils/myutils.dart';
 import '../../../utils/styles.dart';
 import '../../common/components/modal_progress_hud.dart';
 
@@ -26,12 +29,15 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
   late ThemeData themeData;
   bool isLoading = false;
 
-  late QuestionProvider questionProvider;
-  late QuestionController questionController;
+  late PosterProvider posterProvider;
+  late PosterController posterController;
 
   String languageType = LanguagesType.hindi;
 
   Uint8List? imageFile;
+
+  List<int> priorities = [];
+  int selectedPriority = 0;
 
   Future<void> pickImage() async {
     XFile? xFile = await ImagePicker().pickImage(source: ImageSource.gallery,);
@@ -50,7 +56,7 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
     String imageUrl = "";
 
     if(imageData != null) {
-      imageUrl = await questionController.uploadPosterImage(imageData);
+      imageUrl = await posterController.uploadPosterImage(imageData);
     }
     MyPrint.printOnConsole("Final poster imageUrl:$imageUrl");
 
@@ -63,11 +69,15 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
       return;
     }
 
-    Map<String, String> data = {
-      languageType : imageUrl,
-    };
+    PosterModel posterModel = PosterModel(
+      id: MyUtils.getUniqueId(),
+      languageType: languageType,
+      posterUrl: imageUrl,
+      priority: selectedPriority,
+      createdTime: Timestamp.now(),
+    );
 
-    bool isAdded = await questionController.updateLanguagewisePostersData(data: data);
+    bool isAdded = await posterController.addPoster(posterModel: posterModel);
 
     isLoading = false;
     setState(() {});
@@ -84,8 +94,13 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
   @override
   void initState() {
     super.initState();
-    questionProvider = Provider.of<QuestionProvider>(context, listen: false);
-    questionController = QuestionController(questionProvider: questionProvider);
+    posterProvider = Provider.of<PosterProvider>(context, listen: false);
+    posterController = PosterController(posterProvider: posterProvider);
+
+    priorities = List.generate(5, (index) => index);
+    if(!priorities.contains(selectedPriority) && priorities.isNotEmpty) {
+      selectedPriority = priorities.first;
+    }
   }
 
   @override
@@ -109,6 +124,8 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
                     getQuestionResourceWidgetFromQuestionType(),
                     const SizedBox(height: 20,),
                     getLanguageTypeSelectionDropdown(),
+                    const SizedBox(height: 20,),
+                    getPriorityDropdown(),
                     const SizedBox(height: 20,),
                     getAddPosterButton(),
                     const SizedBox(height: 20,),
@@ -154,6 +171,40 @@ class _AddPosterScreenState extends State<AddPosterScreen> {
             }).toList(),
             onChanged: (String? newValue) {
               languageType = (newValue?.isEmpty ?? true) ? LanguagesType.hindi : newValue!;
+              setState(() {});
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget getPriorityDropdown() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "Select Priority",
+          style: themeData.textTheme.titleMedium,
+        ),
+        const SizedBox(width: 10,),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          child: DropdownButton<int>(
+            value: selectedPriority,
+            borderRadius: BorderRadius.circular(10),
+            items: priorities.map((e) {
+              return DropdownMenuItem<int>(
+                value: e,
+                child: Text(e.toString()),
+              );
+            }).toList(),
+            onChanged: (int? newValue) {
+              selectedPriority = newValue ?? 0;
               setState(() {});
             },
           ),
